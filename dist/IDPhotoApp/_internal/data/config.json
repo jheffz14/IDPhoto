@@ -1,0 +1,146 @@
+{
+  "admin": {
+    "username": "admin",
+    "password": "admin123",
+    "session_secret": "change-this-secret-key-in-production"
+  },
+  "app": {
+    "title": "ID Photo Studio",
+    "logo": "\u00f0\u0178\u201c\u00b7",
+    "upload_max_mb": 20,
+    "output_dpi": 300
+  },
+  "paper_sizes": {
+    "a4": {
+      "name": "A4",
+      "width_mm": 210,
+      "height_mm": 297
+    },
+    "letter": {
+      "name": "Letter",
+      "width_mm": 215.9,
+      "height_mm": 279.4
+    },
+    "legal": {
+      "name": "Legal",
+      "width_mm": 215.9,
+      "height_mm": 355.6
+    },
+    "4r": {
+      "name": "4R (4\u00c3\u20146\")",
+      "width_mm": 101.6,
+      "height_mm": 152.4
+    },
+    "5r": {
+      "name": "5R (5\u00c3\u20147\")",
+      "width_mm": 127,
+      "height_mm": 177.8
+    }
+  },
+  "photo_sizes": {
+    "2x2": {
+      "name": "2 x 2",
+      "width_mm": 51.0,
+      "height_mm": 51.0,
+      "background_color": "#ffffff",
+      "enabled": true
+    },
+    "1x1": {
+      "name": "1 x 1",
+      "width_mm": 25.4,
+      "height_mm": 25.4,
+      "background_color": "#ffffff",
+      "enabled": true
+    },
+    "passport": {
+      "name": "Passport (35\u00c3\u201445mm)",
+      "width_mm": 35,
+      "height_mm": 45,
+      "background_color": "#ffffff",
+      "enabled": true
+    },
+    "visa": {
+      "name": "Visa (51\u00c3\u201451mm)",
+      "width_mm": 51,
+      "height_mm": 51,
+      "background_color": "#ffffff",
+      "enabled": true
+    },
+    "wallet": {
+      "name": "Wallet (2.5\u00c3\u20143.5cm)",
+      "width_mm": 25,
+      "height_mm": 35,
+      "background_color": "#ffffff",
+      "enabled": true
+    }
+  },
+  "packages": {
+    "pkg_a": {
+      "name": "Package A - 1 x 1 and 2 x 2 ",
+      "description": "5 pcs 1 x 1 and 4 pcs 2 x 2",
+      "enabled": true,
+      "items": [
+        {
+          "photo_size_id": "1x1",
+          "quantity": 5
+        },
+        {
+          "photo_size_id": "2x2",
+          "quantity": 4
+        }
+      ],
+      "paper_size": "a4",
+      "orientation": "portrait",
+      "margin_mm": 2.0,
+      "spacing_mm": 2.0,
+      "show_cut_lines": true,
+      "background_color": "#ffffff"
+    },
+    "pkg_b": {
+      "name": "Package B \u00e2\u20ac\u201c Passport Set",
+      "description": "Passport + wallet combo",
+      "enabled": true,
+      "items": [
+        {
+          "photo_size_id": "passport",
+          "quantity": 4
+        },
+        {
+          "photo_size_id": "wallet",
+          "quantity": 4
+        }
+      ],
+      "paper_size": "a4",
+      "orientation": "portrait",
+      "margin_mm": 5,
+      "spacing_mm": 3,
+      "show_cut_lines": true,
+      "background_color": "#ffffff"
+    },
+    "pkg_c": {
+      "name": "Package C \u00e2\u20ac\u201c Multi-size",
+      "description": "Visa + passport combo",
+      "enabled": true,
+      "items": [
+        {
+          "photo_size_id": "visa",
+          "quantity": 2
+        },
+        {
+          "photo_size_id": "passport",
+          "quantity": 4
+        },
+        {
+          "photo_size_id": "2x2",
+          "quantity": 4
+        }
+      ],
+      "paper_size": "a4",
+      "orientation": "portrait",
+      "margin_mm": 5,
+      "spacing_mm": 3,
+      "show_cut_lines": true,
+      "background_color": "#ffffff"
+    }
+  }
+}

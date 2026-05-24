@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin – {{ cfg.app.title }}</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #0e0e14; --ink2: #3a3a4a; --cream: #f7f5f0; --white: #fff;
+  --accent: #2563eb; --success: #059669; --danger: #dc2626; --warn: #d97706;
+  --border: #e2e0db; --sidebar: #13131c;
+  --shadow: 0 2px 12px rgba(0,0,0,.08);
+  --r: 10px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--cream); display: flex; min-height: 100vh; }
+
+/* ── Sidebar ── */
+.sidebar {
+  width: 220px; background: var(--sidebar); color: #fff;
+  display: flex; flex-direction: column;
+  position: fixed; top: 0; left: 0; bottom: 0; z-index: 10;
+}
+.sidebar .brand {
+  padding: 1.2rem 1.4rem;
+  font-weight: 700; font-size: 1rem;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  display: flex; align-items: center; gap: .5rem;
+}
+.sidebar nav { flex: 1; padding: .8rem 0; }
+.nav-item {
+  display: flex; align-items: center; gap: .7rem;
+  padding: .65rem 1.4rem;
+  color: rgba(255,255,255,.55);
+  cursor: pointer; font-size: .88rem;
+  transition: all .15s;
+  border-left: 3px solid transparent;
+}
+.nav-item:hover { color: #fff; background: rgba(255,255,255,.05); }
+.nav-item.active { color: #fff; background: rgba(37,99,235,.2); border-left-color: var(--accent); }
+.nav-item .icon { font-size: 1rem; width: 20px; text-align: center; }
+.sidebar .bottom { padding: 1rem 1.4rem; border-top: 1px solid rgba(255,255,255,.08); }
+.sidebar .bottom a { color: rgba(255,255,255,.4); font-size: .8rem; text-decoration: none; }
+.sidebar .bottom a:hover { color: #fff; }
+
+/* ── Main ── */
+.main { margin-left: 220px; flex: 1; }
+.topbar {
+  background: var(--white); border-bottom: 1px solid var(--border);
+  padding: 0 2rem; height: 58px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 5;
+}
+.topbar h1 { font-size: 1rem; font-weight: 600; }
+.content { padding: 2rem; max-width: 960px; }
+
+/* ── Tab panels ── */
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ── Cards & UI ── */
+.card {
+  background: var(--white); border-radius: var(--r);
+  box-shadow: var(--shadow); border: 1px solid var(--border);
+  margin-bottom: 1.5rem;
+}
+.card-header {
+  padding: 1rem 1.4rem;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.card-header h2 { font-size: .95rem; font-weight: 600; }
+.card-body { padding: 1.4rem; }
+
+/* ── Table ── */
+.tbl { width: 100%; border-collapse: collapse; font-size: .85rem; }
+.tbl th { text-align: left; font-size: .72rem; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: #999; padding: .5rem .8rem; border-bottom: 1px solid var(--border); }
+.tbl td { padding: .6rem .8rem; border-bottom: 1px solid #f5f3ee; vertical-align: middle; }
+.tbl tr:last-child td { border-bottom: none; }
+.tbl tr:hover td { background: #fafaf8; }
+
+/* ── Badges ── */
+.badge { display: inline-flex; align-items: center; gap: .3rem; padding: .15rem .6rem; border-radius: 20px; font-size: .72rem; font-weight: 600; }
+.badge-green { background: #dcfce7; color: #166534; }
+.badge-red { background: #fee2e2; color: #991b1b; }
+.badge-blue { background: #dbeafe; color: #1e40af; }
+
+/* ── Buttons ── */
+.btn { display: inline-flex; align-items: center; gap: .4rem; padding: .5rem 1.1rem; border-radius: 7px; font-weight: 600; font-size: .83rem; cursor: pointer; border: none; transition: all .2s; font-family: inherit; }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: #1d4ed8; }
+.btn-danger { background: #fee2e2; color: var(--danger); }
+.btn-danger:hover { background: var(--danger); color: #fff; }
+.btn-outline { background: transparent; color: var(--ink); border: 1.5px solid var(--border); }
+.btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+.btn-sm { padding: .3rem .7rem; font-size: .76rem; }
+.btn-icon { padding: .3rem .5rem; font-size: .9rem; }
+
+/* ── Forms ── */
+.form-row { display: grid; gap: 1rem; margin-bottom: 1rem; }
+.form-row.cols-2 { grid-template-columns: 1fr 1fr; }
+.form-row.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+.form-row.cols-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+.field { display: flex; flex-direction: column; gap: .3rem; }
+.field label { font-size: .75rem; font-weight: 600; color: #666; }
+.field input, .field select, .field textarea {
+  padding: .5rem .75rem; border: 1.5px solid var(--border); border-radius: 7px;
+  font-size: .88rem; font-family: inherit; transition: border-color .2s; background: var(--white);
+}
+.field input:focus, .field select:focus { outline: none; border-color: var(--accent); }
+.field input[type=color] { height: 38px; padding: 3px; cursor: pointer; }
+
+/* ── Toggle ── */
+.toggle-field { display: flex; align-items: center; gap: .6rem; font-size: .85rem; cursor: pointer; }
+.toggle-field input { display: none; }
+.tog { width: 36px; height: 20px; background: var(--border); border-radius: 10px; position: relative; transition: background .2s; }
+.tog::after { content: ''; position: absolute; left: 2px; top: 2px; width: 16px; height: 16px; background: #fff; border-radius: 50%; transition: transform .2s; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+.toggle-field input:checked + .tog { background: var(--accent); }
+.toggle-field input:checked + .tog::after { transform: translateX(16px); }
+
+/* ── Package items builder ── */
+.pkg-items-list { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: .8rem; }
+.pkg-item-row { display: grid; grid-template-columns: 1fr 80px 36px; gap: .5rem; align-items: center; padding: .5rem .8rem; border-bottom: 1px solid #f5f3ee; }
+.pkg-item-row:last-child { border-bottom: none; }
+.pkg-item-row select, .pkg-item-row input { border: 1.5px solid var(--border); border-radius: 6px; padding: .3rem .5rem; font-size: .82rem; font-family: inherit; }
+.pkg-item-row select:focus, .pkg-item-row input:focus { outline: none; border-color: var(--accent); }
+.del-item { background: #fee2e2; color: var(--danger); border: none; border-radius: 5px; width: 28px; height: 28px; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; }
+.del-item:hover { background: var(--danger); color: #fff; }
+
+/* ── Modal ── */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(14,14,20,.5); backdrop-filter: blur(3px); z-index: 100; align-items: center; justify-content: center; }
+.modal-overlay.show { display: flex; }
+.modal { background: var(--white); border-radius: 14px; padding: 2rem; width: 520px; max-width: 95vw; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,.3); }
+.modal h2 { font-size: 1.1rem; font-weight: 700; margin-bottom: 1.2rem; }
+.modal-footer { display: flex; gap: .7rem; justify-content: flex-end; margin-top: 1.4rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+
+/* ── Toast ── */
+.toast { position: fixed; bottom: 1.5rem; right: 1.5rem; background: var(--ink); color: #fff; padding: .7rem 1.2rem; border-radius: 8px; font-size: .85rem; z-index: 999; transform: translateY(100px); transition: transform .3s; }
+.toast.show { transform: translateY(0); }
+.toast.success { background: var(--success); }
+.toast.error { background: var(--danger); }
+
+.color-preview { width: 22px; height: 22px; border-radius: 4px; border: 1px solid var(--border); display: inline-block; vertical-align: middle; }
+
+@media (max-width: 700px) { .sidebar { width: 200px; } .main { margin-left: 200px; } .form-row.cols-2, .form-row.cols-3, .form-row.cols-4 { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <div class="brand"><span>{{ cfg.app.logo }}</span> Admin</div>
+  <nav>
+    <div class="nav-item active" onclick="showTab('dashboard')" id="nav-dashboard"><span class="icon">📊</span> Dashboard</div>
+    <div class="nav-item" onclick="showTab('photo-sizes')" id="nav-photo-sizes"><span class="icon">📐</span> Photo Sizes</div>
+    <div class="nav-item" onclick="showTab('packages')" id="nav-packages"><span class="icon">📦</span> Packages</div>
+    <div class="nav-item" onclick="showTab('paper-sizes')" id="nav-paper-sizes"><span class="icon">📄</span> Paper Sizes</div>
+    <div class="nav-item" onclick="showTab('settings')" id="nav-settings"><span class="icon">⚙️</span> Settings</div>
+  </nav>
+  <div class="bottom">
+    <a href="/">← Back to app</a><br><br>
+    <a href="/admin/logout">Sign out</a>
+  </div>
+</div>
+
+<!-- Main -->
+<div class="main">
+  <div class="topbar">
+    <h1 id="tab-title">Dashboard</h1>
+    <div style="font-size:.82rem;color:#888;">{{ cfg.app.title }} Admin</div>
+  </div>
+  <div class="content">
+
+    <!-- Dashboard -->
+    <div class="tab-panel active" id="tab-dashboard">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.5rem;">
+        <div class="card" style="padding:1.3rem;">
+          <div style="font-size:.75rem;color:#999;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">Photo Sizes</div>
+          <div id="stat-sizes" style="font-size:2rem;font-weight:700;margin-top:.3rem;">–</div>
+        </div>
+        <div class="card" style="padding:1.3rem;">
+          <div style="font-size:.75rem;color:#999;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">Packages</div>
+          <div id="stat-pkgs" style="font-size:2rem;font-weight:700;margin-top:.3rem;">–</div>
+        </div>
+        <div class="card" style="padding:1.3rem;">
+          <div style="font-size:.75rem;color:#999;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">Paper Sizes</div>
+          <div id="stat-papers" style="font-size:2rem;font-weight:700;margin-top:.3rem;">–</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h2>Quick Links</h2></div>
+        <div class="card-body" style="display:flex;gap:1rem;flex-wrap:wrap;">
+          <button class="btn btn-outline" onclick="showTab('photo-sizes')">📐 Manage Photo Sizes</button>
+          <button class="btn btn-outline" onclick="showTab('packages')">📦 Build Packages</button>
+          <button class="btn btn-outline" onclick="showTab('settings')">⚙️ App Settings</button>
+          <button class="btn btn-primary" onclick="window.open('/', '_blank')">↗ Open App</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Photo Sizes -->
+    <div class="tab-panel" id="tab-photo-sizes">
+      <div class="card">
+        <div class="card-header">
+          <h2>Photo Sizes</h2>
+          <button class="btn btn-primary" onclick="openSizeModal()">+ Add Size</button>
+        </div>
+        <div class="card-body" style="padding:0;">
+          <table class="tbl" id="sizes-table">
+            <thead><tr>
+              <th>Name</th><th>Dimensions</th><th>Background</th><th>Status</th><th>Actions</th>
+            </tr></thead>
+            <tbody id="sizes-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Packages -->
+    <div class="tab-panel" id="tab-packages">
+      <div class="card">
+        <div class="card-header">
+          <h2>Packages</h2>
+          <button class="btn btn-primary" onclick="openPkgModal()">+ Add Package</button>
+        </div>
+        <div class="card-body" style="padding:0;">
+          <table class="tbl" id="pkgs-table">
+            <thead><tr>
+              <th>Name</th><th>Contents</th><th>Paper</th><th>Status</th><th>Actions</th>
+            </tr></thead>
+            <tbody id="pkgs-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Paper Sizes -->
+    <div class="tab-panel" id="tab-paper-sizes">
+      <div class="card">
+        <div class="card-header">
+          <h2>Paper Sizes</h2>
+          <button class="btn btn-primary" onclick="openPaperModal()">+ Add Paper</button>
+        </div>
+        <div class="card-body" style="padding:0;">
+          <table class="tbl" id="papers-table">
+            <thead><tr>
+              <th>ID</th><th>Name</th><th>Width (mm)</th><th>Height (mm)</th><th>Actions</th>
+            </tr></thead>
+            <tbody id="papers-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings -->
+    <div class="tab-panel" id="tab-settings">
+      <div class="card">
+        <div class="card-header"><h2>App Settings</h2></div>
+        <div class="card-body">
+          <div class="form-row cols-2">
+            <div class="field"><label>App Title</label><input id="s-title" type="text"></div>
+            <div class="field"><label>Logo Emoji</label><input id="s-logo" type="text" maxlength="4"></div>
+          </div>
+          <div class="form-row cols-2">
+            <div class="field"><label>Max Upload (MB)</label><input id="s-maxmb" type="number" min="1" max="100"></div>
+            <div class="field"><label>Output DPI</label><input id="s-dpi" type="number" min="72" max="600"></div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;">
+            <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h2>Change Password</h2></div>
+        <div class="card-body">
+          <div class="form-row cols-2">
+            <div class="field"><label>Current Password</label><input id="pw-current" type="password"></div>
+            <div class="field"><label>New Password</label><input id="pw-new" type="password"></div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;">
+            <button class="btn btn-primary" onclick="changePassword()">Update Password</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── Size Modal ─────────────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="size-modal">
+  <div class="modal">
+    <h2 id="size-modal-title">Add Photo Size</h2>
+    <input type="hidden" id="sm-id">
+    <div class="form-row cols-2">
+      <div class="field"><label>Size Name *</label><input id="sm-name" placeholder="e.g. 2×2 inch"></div>
+      <div class="field"><label>Background Color</label><input id="sm-bg" type="color" value="#ffffff"></div>
+    </div>
+    <div class="form-row cols-2">
+      <div class="field"><label>Width (mm) *</label><input id="sm-w" type="number" step="0.1" placeholder="50.8"></div>
+      <div class="field"><label>Height (mm) *</label><input id="sm-h" type="number" step="0.1" placeholder="50.8"></div>
+    </div>
+    <label class="toggle-field">
+      <input type="checkbox" id="sm-enabled" checked>
+      <div class="tog"></div>
+      Enabled
+    </label>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('size-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveSize()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Package Modal ──────────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="pkg-modal">
+  <div class="modal">
+    <h2 id="pkg-modal-title">Add Package</h2>
+    <input type="hidden" id="pm-id">
+    <div class="form-row cols-2">
+      <div class="field"><label>Package Name *</label><input id="pm-name" placeholder="Package A"></div>
+      <div class="field"><label>Description</label><input id="pm-desc" placeholder="Short description"></div>
+    </div>
+    <div class="form-row cols-3">
+      <div class="field">
+        <label>Paper Size</label>
+        <select id="pm-paper"></select>
+      </div>
+      <div class="field">
+        <label>Orientation</label>
+        <select id="pm-orient">
+          <option value="portrait">Portrait</option>
+          <option value="landscape">Landscape</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Sheet BG Color</label>
+        <input id="pm-bg" type="color" value="#ffffff">
+      </div>
+    </div>
+    <div class="form-row cols-2">
+      <div class="field"><label>Margin (mm)</label><input id="pm-margin" type="number" step="0.5" value="5"></div>
+      <div class="field"><label>Spacing (mm)</label><input id="pm-spacing" type="number" step="0.5" value="3"></div>
+    </div>
+    <div style="margin-bottom:1rem;">
+      <label class="toggle-field">
+        <input type="checkbox" id="pm-cuts" checked>
+        <div class="tog"></div>
+        Show cut lines
+      </label>
+    </div>
+
+    <div style="font-size:.8rem;font-weight:600;color:#666;margin-bottom:.5rem;">Package Contents</div>
+    <div id="pm-items-list" class="pkg-items-list"></div>
+    <button class="btn btn-outline btn-sm" onclick="addPkgItem()" style="margin-bottom:1rem;">+ Add Photo</button>
+
+    <div style="margin-top:.5rem;">
+      <label class="toggle-field">
+        <input type="checkbox" id="pm-enabled" checked>
+        <div class="tog"></div>
+        Enabled
+      </label>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('pkg-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="savePackage()">Save Package</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Paper Modal ────────────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="paper-modal">
+  <div class="modal">
+    <h2 id="paper-modal-title">Add Paper Size</h2>
+    <input type="hidden" id="ppm-id">
+    <div class="form-row cols-2">
+      <div class="field"><label>Paper ID (slug) *</label><input id="ppm-id-field" placeholder="e.g. 6r"></div>
+      <div class="field"><label>Display Name *</label><input id="ppm-name" placeholder="e.g. 6R (6×8&quot;)"></div>
+    </div>
+    <div class="form-row cols-2">
+      <div class="field"><label>Width (mm) *</label><input id="ppm-w" type="number" step="0.1"></div>
+      <div class="field"><label>Height (mm) *</label><input id="ppm-h" type="number" step="0.1"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('paper-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="savePaper()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let CFG = {};
+let editSizeId = null, editPkgId = null, editPaperId = null;
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+async function init() {
+  const res = await fetch('/api/admin/config');
+  CFG = await res.json();
+  renderSizes();
+  renderPackages();
+  renderPapers();
+  renderStats();
+  loadSettings();
+}
+
+function renderStats() {
+  document.getElementById('stat-sizes').textContent = Object.keys(CFG.photo_sizes || {}).length;
+  document.getElementById('stat-pkgs').textContent = Object.keys(CFG.packages || {}).length;
+  document.getElementById('stat-papers').textContent = Object.keys(CFG.paper_sizes || {}).length;
+}
+
+// ── Tabs ──────────────────────────────────────────────────────────────────────
+const tabTitles = { dashboard:'Dashboard', 'photo-sizes':'Photo Sizes', packages:'Packages', 'paper-sizes':'Paper Sizes', settings:'Settings' };
+function showTab(id) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  document.getElementById('nav-' + id).classList.add('active');
+  document.getElementById('tab-title').textContent = tabTitles[id] || id;
+}
+
+// ── Photo Sizes ───────────────────────────────────────────────────────────────
+function renderSizes() {
+  const tbody = document.getElementById('sizes-tbody');
+  const sizes = CFG.photo_sizes || {};
+  tbody.innerHTML = Object.entries(sizes).map(([id, s]) => `
+    <tr>
+      <td><strong>${s.name}</strong></td>
+      <td>${s.width_mm}×${s.height_mm} mm</td>
+      <td><span class="color-preview" style="background:${s.background_color}"></span> ${s.background_color}</td>
+      <td>${s.enabled ? '<span class="badge badge-green">Active</span>' : '<span class="badge badge-red">Disabled</span>'}</td>
+      <td style="display:flex;gap:.4rem;">
+        <button class="btn btn-outline btn-sm" onclick="openSizeModal('${id}')">Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteSize('${id}')">Delete</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function openSizeModal(id = null) {
+  editSizeId = id;
+  document.getElementById('size-modal-title').textContent = id ? 'Edit Photo Size' : 'Add Photo Size';
+  if (id && CFG.photo_sizes[id]) {
+    const s = CFG.photo_sizes[id];
+    document.getElementById('sm-id').value = id;
+    document.getElementById('sm-name').value = s.name;
+    document.getElementById('sm-w').value = s.width_mm;
+    document.getElementById('sm-h').value = s.height_mm;
+    document.getElementById('sm-bg').value = s.background_color;
+    document.getElementById('sm-enabled').checked = s.enabled !== false;
+  } else {
+    document.getElementById('sm-id').value = '';
+    document.getElementById('sm-name').value = '';
+    document.getElementById('sm-w').value = '';
+    document.getElementById('sm-h').value = '';
+    document.getElementById('sm-bg').value = '#ffffff';
+    document.getElementById('sm-enabled').checked = true;
+  }
+  showModal('size-modal');
+}
+
+async function saveSize() {
+  const sid = document.getElementById('sm-id').value || null;
+  const data = {
+    name: document.getElementById('sm-name').value,
+    width_mm: parseFloat(document.getElementById('sm-w').value),
+    height_mm: parseFloat(document.getElementById('sm-h').value),
+    background_color: document.getElementById('sm-bg').value,
+    enabled: document.getElementById('sm-enabled').checked
+  };
+  if (!data.name || !data.width_mm || !data.height_mm) { showToast('Fill all required fields.', 'error'); return; }
+  let res;
+  if (sid) {
+    res = await fetch(`/api/admin/photo_sizes/${sid}`, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data) });
+  } else {
+    res = await fetch('/api/admin/photo_sizes', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data) });
+  }
+  const d = await res.json();
+  if (d.error) { showToast(d.error, 'error'); return; }
+  showToast('Saved!', 'success');
+  closeModal('size-modal');
+  await reloadConfig();
+}
+
+async function deleteSize(id) {
+  if (!confirm('Delete this photo size?')) return;
+  await fetch(`/api/admin/photo_sizes/${id}`, { method: 'DELETE' });
+  showToast('Deleted', 'success');
+  await reloadConfig();
+}
+
+// ── Packages ──────────────────────────────────────────────────────────────────
+function renderPackages() {
+  const tbody = document.getElementById('pkgs-tbody');
+  const pkgs = CFG.packages || {};
+  tbody.innerHTML = Object.entries(pkgs).map(([id, p]) => `
+    <tr>
+      <td><strong>${p.name}</strong><br><span style="font-size:.75rem;color:#888;">${p.description || ''}</span></td>
+      <td>${(p.items||[]).map(it => `<span class="badge badge-blue">${it.quantity}× ${it.photo_size_id}</span>`).join(' ')}</td>
+      <td>${(p.paper_size||'').toUpperCase()} / ${p.orientation||'portrait'}</td>
+      <td>${p.enabled ? '<span class="badge badge-green">Active</span>' : '<span class="badge badge-red">Disabled</span>'}</td>
+      <td style="display:flex;gap:.4rem;">
+        <button class="btn btn-outline btn-sm" onclick="openPkgModal('${id}')">Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deletePkg('${id}')">Delete</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function populatePaperSelect(selectId) {
+  const sel = document.getElementById(selectId);
+  sel.innerHTML = Object.entries(CFG.paper_sizes || {}).map(([id, p]) =>
+    `<option value="${id}">${p.name}</option>`
+  ).join('');
+}
+
+function openPkgModal(id = null) {
+  editPkgId = id;
+  populatePaperSelect('pm-paper');
+  document.getElementById('pkg-modal-title').textContent = id ? 'Edit Package' : 'Add Package';
+  document.getElementById('pm-items-list').innerHTML = '';
+
+  if (id && CFG.packages[id]) {
+    const p = CFG.packages[id];
+    document.getElementById('pm-id').value = id;
+    document.getElementById('pm-name').value = p.name;
+    document.getElementById('pm-desc').value = p.description || '';
+    document.getElementById('pm-paper').value = p.paper_size;
+    document.getElementById('pm-orient').value = p.orientation || 'portrait';
+    document.getElementById('pm-margin').value = p.margin_mm;
+    document.getElementById('pm-spacing').value = p.spacing_mm;
+    document.getElementById('pm-cuts').checked = p.show_cut_lines !== false;
+    document.getElementById('pm-bg').value = p.background_color || '#ffffff';
+    document.getElementById('pm-enabled').checked = p.enabled !== false;
+    (p.items || []).forEach(it => addPkgItem(it.photo_size_id, it.quantity));
+  } else {
+    document.getElementById('pm-id').value = '';
+    document.getElementById('pm-name').value = '';
+    document.getElementById('pm-desc').value = '';
+    document.getElementById('pm-margin').value = 5;
+    document.getElementById('pm-spacing').value = 3;
+    document.getElementById('pm-cuts').checked = true;
+    document.getElementById('pm-bg').value = '#ffffff';
+    document.getElementById('pm-enabled').checked = true;
+  }
+  showModal('pkg-modal');
+}
+
+function addPkgItem(sizeId = '', qty = 1) {
+  const list = document.getElementById('pm-items-list');
+  const row = document.createElement('div');
+  row.className = 'pkg-item-row';
+  const sizeOpts = Object.entries(CFG.photo_sizes || {}).map(([id, s]) =>
+    `<option value="${id}" ${id === sizeId ? 'selected' : ''}>${s.name}</option>`
+  ).join('');
+  row.innerHTML = `
+    <select class="item-size">${sizeOpts}</select>
+    <input class="item-qty" type="number" min="1" max="100" value="${qty}" placeholder="Qty">
+    <button class="del-item" onclick="this.parentNode.remove()">×</button>
+  `;
+  list.appendChild(row);
+}
+
+async function savePackage() {
+  const pid = document.getElementById('pm-id').value || null;
+  const rows = document.querySelectorAll('#pm-items-list .pkg-item-row');
+  const items = Array.from(rows).map(r => ({
+    photo_size_id: r.querySelector('.item-size').value,
+    quantity: parseInt(r.querySelector('.item-qty').value) || 1
+  }));
+  const data = {
+    name: document.getElementById('pm-name').value,
+    description: document.getElementById('pm-desc').value,
+    paper_size: document.getElementById('pm-paper').value,
+    orientation: document.getElementById('pm-orient').value,
+    margin_mm: parseFloat(document.getElementById('pm-margin').value),
+    spacing_mm: parseFloat(document.getElementById('pm-spacing').value),
+    show_cut_lines: document.getElementById('pm-cuts').checked,
+    background_color: document.getElementById('pm-bg').value,
+    enabled: document.getElementById('pm-enabled').checked,
+    items
+  };
+  if (!data.name) { showToast('Package name is required.', 'error'); return; }
+  let res;
+  if (pid) {
+    res = await fetch(`/api/admin/packages/${pid}`, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data) });
+  } else {
+    res = await fetch('/api/admin/packages', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data) });
+  }
+  const d = await res.json();
+  if (d.error) { showToast(d.error, 'error'); return; }
+  showToast('Package saved!', 'success');
+  closeModal('pkg-modal');
+  await reloadConfig();
+}
+
+async function deletePkg(id) {
+  if (!confirm('Delete this package?')) return;
+  await fetch(`/api/admin/packages/${id}`, { method: 'DELETE' });
+  showToast('Deleted', 'success');
+  await reloadConfig();
+}
+
+// ── Paper Sizes ───────────────────────────────────────────────────────────────
+function renderPapers() {
+  const tbody = document.getElementById('papers-tbody');
+  const papers = CFG.paper_sizes || {};
+  tbody.innerHTML = Object.entries(papers).map(([id, p]) => `
+    <tr>
+      <td><code>${id}</code></td>
+      <td>${p.name}</td>
+      <td>${p.width_mm}</td>
+      <td>${p.height_mm}</td>
+      <td style="display:flex;gap:.4rem;">
+        <button class="btn btn-outline btn-sm" onclick="openPaperModal('${id}')">Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deletePaper('${id}')">Delete</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function openPaperModal(id = null) {
+  editPaperId = id;
+  document.getElementById('paper-modal-title').textContent = id ? 'Edit Paper Size' : 'Add Paper Size';
+  if (id && CFG.paper_sizes[id]) {
+    const p = CFG.paper_sizes[id];
+    document.getElementById('ppm-id').value = id;
+    document.getElementById('ppm-id-field').value = id;
+    document.getElementById('ppm-id-field').disabled = true;
+    document.getElementById('ppm-name').value = p.name;
+    document.getElementById('ppm-w').value = p.width_mm;
+    document.getElementById('ppm-h').value = p.height_mm;
+  } else {
+    document.getElementById('ppm-id').value = '';
+    document.getElementById('ppm-id-field').value = '';
+    document.getElementById('ppm-id-field').disabled = false;
+    document.getElementById('ppm-name').value = '';
+    document.getElementById('ppm-w').value = '';
+    document.getElementById('ppm-h').value = '';
+  }
+  showModal('paper-modal');
+}
+
+async function savePaper() {
+  const isEdit = !!document.getElementById('ppm-id').value;
+  const pid = isEdit ? document.getElementById('ppm-id').value : document.getElementById('ppm-id-field').value.toLowerCase().replace(/\s+/g, '_');
+  if (!pid) { showToast('Paper ID is required.', 'error'); return; }
+
+  const updated = JSON.parse(JSON.stringify(CFG));
+  updated.paper_sizes[pid] = {
+    name: document.getElementById('ppm-name').value,
+    width_mm: parseFloat(document.getElementById('ppm-w').value),
+    height_mm: parseFloat(document.getElementById('ppm-h').value)
+  };
+  const res = await fetch('/api/admin/config', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ paper_sizes: updated.paper_sizes }) });
+  const d = await res.json();
+  if (d.error) { showToast(d.error, 'error'); return; }
+  showToast('Saved!', 'success');
+  closeModal('paper-modal');
+  await reloadConfig();
+}
+
+async function deletePaper(id) {
+  if (!confirm('Delete this paper size?')) return;
+  const updated = JSON.parse(JSON.stringify(CFG));
+  delete updated.paper_sizes[id];
+  await fetch('/api/admin/config', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ paper_sizes: updated.paper_sizes }) });
+  showToast('Deleted', 'success');
+  await reloadConfig();
+}
+
+// ── Settings ──────────────────────────────────────────────────────────────────
+function loadSettings() {
+  const app = CFG.app || {};
+  document.getElementById('s-title').value = app.title || '';
+  document.getElementById('s-logo').value = app.logo || '';
+  document.getElementById('s-maxmb').value = app.upload_max_mb || 20;
+  document.getElementById('s-dpi').value = app.output_dpi || 300;
+}
+
+async function saveSettings() {
+  const data = {
+    app: {
+      title: document.getElementById('s-title').value,
+      logo: document.getElementById('s-logo').value,
+      upload_max_mb: parseInt(document.getElementById('s-maxmb').value),
+      output_dpi: parseInt(document.getElementById('s-dpi').value)
+    }
+  };
+  const res = await fetch('/api/admin/config', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data) });
+  const d = await res.json();
+  d.error ? showToast(d.error, 'error') : showToast('Settings saved! Reload app to see changes.', 'success');
+}
+
+async function changePassword() {
+  const cur = document.getElementById('pw-current').value;
+  const nw = document.getElementById('pw-new').value;
+  if (!cur || !nw) { showToast('Fill both password fields.', 'error'); return; }
+  const res = await fetch('/api/admin/change_password', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ current: cur, new_password: nw }) });
+  const d = await res.json();
+  if (d.error) { showToast(d.error, 'error'); return; }
+  showToast('Password updated!', 'success');
+  document.getElementById('pw-current').value = '';
+  document.getElementById('pw-new').value = '';
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+async function reloadConfig() {
+  const res = await fetch('/api/admin/config');
+  CFG = await res.json();
+  renderSizes(); renderPackages(); renderPapers(); renderStats();
+}
+
+function showModal(id) { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+// Close modal on overlay click
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('show'); });
+});
+
+let toastTimer;
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (type ? ' ' + type : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+init();
+</script>
+</body>
+</html>
